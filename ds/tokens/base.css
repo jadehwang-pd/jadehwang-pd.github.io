@@ -1,0 +1,10 @@
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:20px;color:var(--foreground);background:var(--background);-webkit-font-smoothing:antialiased}
+a{color:var(--foreground);text-underline-offset:4px}
+a:hover{color:var(--muted-foreground)}
+button,input,textarea,select{font:inherit;color:inherit}
+.sc-field::placeholder{color:var(--muted-foreground);opacity:1}
+.sc-scroll::-webkit-scrollbar{width:10px;height:10px}.sc-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:9999px;border:3px solid transparent;background-clip:content-box}.sc-scroll::-webkit-scrollbar-track{background:transparent}
+@keyframes sc-spin{to{transform:rotate(360deg)}}
+@keyframes sc-pulse{50%{opacity:.5}}

@@ -1,0 +1,45 @@
+/* Ready-to-use semantic aliases over fig-tokens.css (which stores FLOAT tokens unitless).
+   Color roles (--background, --primary, --border …) come straight from the Figma "mode"
+   collection and switch with .dark / [data-theme="dark"]. */
+:root{
+  /* type families */
+  --font-sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-geist:"Geist","Inter",sans-serif;
+  --font-mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  /* type scale (size / line-height) — Tailwind scale as defined in tw/font */
+  --text-xs:12px;--leading-xs:16px;
+  --text-sm:14px;--leading-sm:20px;
+  --text-base:16px;--leading-base:24px;
+  --text-lg:18px;--leading-lg:28px;
+  --text-xl:20px;--leading-xl:28px;
+  --text-2xl:24px;--leading-2xl:32px;
+  --text-3xl:30px;--leading-3xl:36px;
+  --text-4xl:36px;--leading-4xl:40px;
+  --weight-light:300;--weight-normal:400;--weight-medium:500;--weight-semibold:600;--weight-bold:700;
+  /* radius — mode collection: sm 6, md 8, lg 10, xl 14, 2xl 18, 3xl 22, 4xl 26 */
+  --r-xs:2px;--r-sm:6px;--r-md:8px;--r-lg:10px;--r-xl:14px;--r-2xl:18px;--r-3xl:22px;--r-4xl:26px;--r-full:9999px;
+  /* spacing (Tailwind 4px base, exact values used across the file) */
+  --sp-0_5:2px;--sp-1:4px;--sp-1_5:6px;--sp-2:8px;--sp-2_5:10px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;--sp-10:40px;--sp-14:56px;
+  /* control heights */
+  --h-xs:24px;--h-sm:28px;--h-default:32px;--h-lg:36px;
+  /* elevation */
+  --shadow-xs:0px 1px 2px 0px rgba(0,0,0,0.1);
+  --shadow-sm:0px 1px 3px 0px rgba(0,0,0,0.1);
+  --shadow-md:0px 4px 6px -1px rgba(0,0,0,0.1),0px 2px 4px -2px rgba(0,0,0,0.1);
+  --shadow-lg:0px 10px 15px -3px rgba(0,0,0,0.1),0px 4px 6px -4px rgba(0,0,0,0.1);
+  --ring-card:inset 0 0 0 1px var(--border);
+  --focus-ring:0px 0px 0px 3px rgba(161,161,161,0.5);
+  --focus-ring-destructive:0px 0px 0px 3px rgba(220,38,38,0.2);
+  /* extra brand-ish accents found in the file */
+  --bubble-primary:rgb(20,71,230);
+  --bubble-tinted:rgb(199,232,255);
+  --code-highlight:rgba(228,228,231,0.5);
+  --success:rgb(22,163,74);
+  --overlay:rgba(0,0,0,0.1);
+  /* semantic aliases */
+  --surface-page:var(--background);
+  --surface-card:var(--card);
+  --surface-muted:var(--muted);
+  --text-body:var(--foreground);
+  --text-muted:var(--muted-foreground);
+}
