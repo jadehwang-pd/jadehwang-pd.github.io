@@ -1396,10 +1396,11 @@ class Component extends DCLogic {
     React.useEffect(() => {
       const c = cv.current; if (!c) return;
       const ctx = c.getContext('2d'); const imgs = []; let raf, target = 0, cur = 0, drawn = -1;
-      for (let i = 0; i < count; i++) { const im = new Image(); im.decoding = 'async'; im.src = base + String(i).padStart(3, '0') + '.webp'; imgs.push(im); }
+      for (let i = 0; i < count; i++) { if (i >= 19 && i <= 25) continue; const im = new Image(); im.decoding = 'async'; im.src = base + String(i).padStart(3, '0') + '.webp'; imgs.push(im); }
+      const N = imgs.length;
       const fit = () => { const r = c.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1); c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); drawn = -1; };
       fit(); window.addEventListener('resize', fit);
-      const A = [[0.8, 0, 0], [-0.8, 0, 48], [-0.6, -0.7, 72], [0, -0.9, 102], [0, 0.9, 134]];
+      const A = [[0.8, 0, 0], [0.1, 0, 6], [-0.95, 0, 45], [-0.6, -0.7, 65], [0, -0.9, 95], [0, 0.9, 127]];
       let segI = 0;
       const proj = (x, y, k) => { const [ax, ay, at] = A[k], [bx, by, bt] = A[k + 1]; const dx = bx - ax, dy = by - ay; const u = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy))); const px = ax + dx * u, py = ay + dy * u; return [Math.hypot(x - px, y - py), at + (bt - at) * u]; };
       const onMove = e => {
@@ -1408,7 +1409,7 @@ class Component extends DCLogic {
         if (reverse) x = -x;
         let best = segI, bd = proj(x, y, segI)[0] - 0.15;
         for (let k = 0; k < A.length - 1; k++) { const d = proj(x, y, k)[0]; if (d < bd) { bd = d; best = k; } }
-        segI = best; target = Math.min(count - 1, proj(x, y, segI)[1]);
+        segI = best; target = Math.min(N - 1, proj(x, y, segI)[1]);
       };
       window.addEventListener('pointermove', onMove);
       const ok = k => imgs[k] && imgs[k].complete && imgs[k].naturalWidth;
@@ -1678,7 +1679,7 @@ class Component extends DCLogic {
     return {
       themeClass: (r === 'home' || r === 'about') ? 'dark' : '',
       aboutOrb: r === 'about' ? React.createElement(Component.Orb, { palette: this.props.aura ?? 'ember', speaking: (S.aStep ?? 4) < 4 }) : null,
-      avatar: React.createElement(Component.ScrubFrames, { base: 'assets/avatar-hd/f', count: 144, smoothing: 0.3, style: { WebkitMaskImage: 'linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 12%)', maskImage: 'linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 12%)', WebkitMaskComposite: 'source-in', maskComposite: 'intersect' } }),
+      avatar: React.createElement(Component.ScrubFrames, { base: 'assets/avatar-hd/f', count: 144, smoothing: 0.2, style: { WebkitMaskImage: 'linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 12%)', maskImage: 'linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 12%)', WebkitMaskComposite: 'source-in', maskComposite: 'intersect' } }),
       orb: React.createElement(Component.Orb, { palette: this.props.aura ?? 'ember', speaking: (S.hl ?? 4) < 4 && (S.hn ?? 0) > 0 }),
       tocRef: this.tocRef, toc: this.tocLabels.map((label, i) => { const on = i === (this.state.sec || 0); return { label, n: String(i + 1).padStart(2, '0'), go: () => this.tocGo(i), bg: on ? 'var(--primary)' : 'transparent', fg: on ? 'var(--primary-foreground)' : 'var(--muted-foreground)' }; }),
       loopRing: this.loopRing, personaRef: this.personaRef, onPersonaScroll: this.onPersonaScroll, personaPrev: () => this.personaGo((this.state.persona || 0) - 1), personaNext: () => this.personaGo((this.state.persona || 0) + 1), personaDots: [0, 1, 2].map(i => ({ go: () => this.personaGo(i), w: i === (this.state.persona || 0) ? '20px' : '6px', bg: i === (this.state.persona || 0) ? 'var(--foreground)' : 'var(--border)' })), tplWall: this.tplWall, afterFill: this.afterFill, vizTech: this.vizTech, vizDemand: this.vizDemand, vizBarrier: this.vizBarrier,
