@@ -1391,6 +1391,40 @@ class Component extends DCLogic {
         h('span', { style: { fontSize: 11, color: 'rgb(120,120,130)' } }, label),
         h('span', { style: { fontSize: 22, fontWeight: 800, fontVariantNumeric: 'tabular-nums' } }, (value * t).toFixed(value % 1 ? 2 : 0) + '%')));
   };
+  static ScrubFrames = function ScrubFrames({ base, count, smoothing = 0.3, reverse = false, style }) {
+    const h = React.createElement, cv = React.useRef(null);
+    React.useEffect(() => {
+      const c = cv.current; if (!c) return;
+      const ctx = c.getContext('2d'); const imgs = []; let raf, target = 0, cur = 0, drawn = -1;
+      for (let i = 0; i < count; i++) { const im = new Image(); im.decoding = 'async'; im.src = base + String(i).padStart(3, '0') + '.webp'; imgs.push(im); }
+      const fit = () => { const r = c.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1); c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); drawn = -1; };
+      fit(); window.addEventListener('resize', fit);
+      const A = [[0.8, 0, 0], [-0.8, 0, 48], [-0.6, -0.7, 72], [0, -0.9, 102], [0, 0.9, 134]];
+      let segI = 0;
+      const proj = (x, y, k) => { const [ax, ay, at] = A[k], [bx, by, bt] = A[k + 1]; const dx = bx - ax, dy = by - ay; const u = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy))); const px = ax + dx * u, py = ay + dy * u; return [Math.hypot(x - px, y - py), at + (bt - at) * u]; };
+      const onMove = e => {
+        const r = c.getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height * 0.42;
+        let x = Math.max(-1, Math.min(1, (e.clientX - cx) / (window.innerWidth / 2))), y = Math.max(-1, Math.min(1, (e.clientY - cy) / (window.innerHeight / 2)));
+        if (reverse) x = -x;
+        let best = segI, bd = proj(x, y, segI)[0] - 0.15;
+        for (let k = 0; k < A.length - 1; k++) { const d = proj(x, y, k)[0]; if (d < bd) { bd = d; best = k; } }
+        segI = best; target = Math.min(count - 1, proj(x, y, segI)[1]);
+      };
+      window.addEventListener('pointermove', onMove);
+      const ok = k => imgs[k] && imgs[k].complete && imgs[k].naturalWidth;
+      const tick = () => {
+        raf = requestAnimationFrame(tick);
+        cur += (target - cur) * smoothing;
+        let i = Math.round(cur);
+        while (i > 0 && !ok(i)) i--;
+        if (i !== drawn && ok(i)) { ctx.drawImage(imgs[i], 0, 0, c.width, c.height); drawn = i; }
+      };
+      raf = requestAnimationFrame(tick);
+      return () => { cancelAnimationFrame(raf); window.removeEventListener('pointermove', onMove); window.removeEventListener('resize', fit); };
+    }, [base, count, smoothing, reverse]);
+    return h('div', { style: { width: '100%', height: '100%', ...style } },
+      h('canvas', { ref: cv, style: { display: 'block', width: '100%', height: '100%', mixBlendMode: 'lighten', pointerEvents: 'none' } }));
+  };
   static ScrubVideo = function ScrubVideo({ src, axis = 'horizontal', reverse = false, trackingArea = 'window', smoothing = 0.22, objectFit = 'cover', borderRadius = 0, style }) {
     // For buttery scrubbing encode every frame as a keyframe:
     // ffmpeg -i in.mp4 -c:v libx264 -preset slow -crf 18 -g 1 -keyint_min 1 -x264-params "scenecut=0" -profile:v high -pix_fmt yuv420p -movflags +faststart -an out.mp4
@@ -1644,7 +1678,7 @@ class Component extends DCLogic {
     return {
       themeClass: (r === 'home' || r === 'about') ? 'dark' : '',
       aboutOrb: r === 'about' ? React.createElement(Component.Orb, { palette: this.props.aura ?? 'ember', speaking: (S.aStep ?? 4) < 4 }) : null,
-      avatar: React.createElement(Component.ScrubVideo, { src: 'assets/avatar-look-v2.mp4', axis: 'horizontal', trackingArea: 'window', smoothing: 0.22, style: { WebkitMaskImage: 'linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 12%)', maskImage: 'linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 12%)', WebkitMaskComposite: 'source-in', maskComposite: 'intersect' } }),
+      avatar: React.createElement(Component.ScrubFrames, { base: 'assets/avatar-hd/f', count: 144, smoothing: 0.3, style: { WebkitMaskImage: 'linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 12%)', maskImage: 'linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 12%)', WebkitMaskComposite: 'source-in', maskComposite: 'intersect' } }),
       orb: React.createElement(Component.Orb, { palette: this.props.aura ?? 'ember', speaking: (S.hl ?? 4) < 4 && (S.hn ?? 0) > 0 }),
       tocRef: this.tocRef, toc: this.tocLabels.map((label, i) => { const on = i === (this.state.sec || 0); return { label, n: String(i + 1).padStart(2, '0'), go: () => this.tocGo(i), bg: on ? 'var(--primary)' : 'transparent', fg: on ? 'var(--primary-foreground)' : 'var(--muted-foreground)' }; }),
       loopRing: this.loopRing, personaRef: this.personaRef, onPersonaScroll: this.onPersonaScroll, personaPrev: () => this.personaGo((this.state.persona || 0) - 1), personaNext: () => this.personaGo((this.state.persona || 0) + 1), personaDots: [0, 1, 2].map(i => ({ go: () => this.personaGo(i), w: i === (this.state.persona || 0) ? '20px' : '6px', bg: i === (this.state.persona || 0) ? 'var(--foreground)' : 'var(--border)' })), tplWall: this.tplWall, afterFill: this.afterFill, vizTech: this.vizTech, vizDemand: this.vizDemand, vizBarrier: this.vizBarrier,
